@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import axios from 'axios';
-import { NButton, NForm, NFormItem, NInput, NMessageProvider, NUpload, useMessage } from 'naive-ui';
+import { NButton, NForm, NFormItem, NInput, NMessageProvider, useMessage } from 'naive-ui';
 import type { UploadFileInfo } from 'naive-ui';
 import { useUserStore } from '@/stores/user';
 import { request } from '@/utils/request';
@@ -69,6 +69,11 @@ const avatarUrl = computed(() => {
   
   // 檢查是否為完整 URL
   if (url.startsWith('http://') || url.startsWith('https://')) {
+    // 保留已有的時間戳參數，或添加新的時間戳參數
+    if (!url.includes('?t=') && !url.includes('&t=')) {
+      const timestamp = Date.now();
+      url = `${url}${url.includes('?') ? '&' : '?'}t=${timestamp}`;
+    }
     return url;
   }
   
@@ -82,8 +87,9 @@ const avatarUrl = computed(() => {
   // 確保使用正斜線
   url = url.replace(/\\/g, '/');
 
-  // 組合完整 URL
-  return `${apiBaseUrl}/${url}`;
+  // 組合完整 URL，並添加時間戳防止快取
+  const timestamp = Date.now();
+  return `${apiBaseUrl}/${url}${url.includes('?') ? '&' : '?'}t=${timestamp}`;
 });
 
 // 模擬數據
@@ -215,59 +221,6 @@ watch(() => userInfo.value, (newUserInfo) => {
 }, { immediate: true });
 
 const message = useMessage();
-
-// 處理頭像上傳
-async function handleAvatarUpload(options: { file: UploadFileInfo }) {
-  try {
-    const formData = new FormData();
-    formData.append('avatar', options.file.file as File);
-
-    const token = localStorage.getItem('access_token');
-    if (!token)
-      throw new Error('請先登入');
-
-    // 使用更穩定的API調用方式
-    const response = await axios({
-      method: 'post',
-      url: `${baseApiUrl}/api/member/profile/update/`,
-      data: formData,
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data',
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-      withCredentials: true,
-    });
-
-    if (response.status === 200) {
-      message.success('頭像上傳成功');
-      // 更新用戶資料
-      await userStore.checkLoginStatus();
-      // 更新用戶頭像
-      if (userInfo.value && response.data.avatar) {
-        userInfo.value.avatar = response.data.avatar;
-        // 手動更新 localStorage 中的用戶信息
-        const localUserInfo = localStorage.getItem('userInfo');
-        if (localUserInfo) {
-          try {
-            const userData = JSON.parse(localUserInfo);
-            userData.avatar = response.data.avatar;
-            localStorage.setItem('userInfo', JSON.stringify(userData));
-          } catch (e) {
-            console.error('更新本地存儲的用戶頭像失敗:', e);
-          }
-        }
-      }
-    }
-    else {
-      throw new Error(response.data.message || '上傳失敗');
-    }
-  }
-  catch (error: any) {
-    console.error('上傳頭像失敗:', error);
-    message.error(error.response?.data?.message || '上傳頭像失敗，請稍後再試');
-  }
-}
 
 // 在元件掛載時獲取最新數據
 onMounted(async () => {
@@ -747,24 +700,6 @@ async function updatePassword() {
       <h2 class="text-xl font-bold text-gray-900 mb-6">
         編輯個人資料
       </h2>
-
-      <!-- 頭像上傳 -->
-      <div class="mb-6">
-        <div class="flex items-center space-x-4">
-          <img
-            :src="avatarUrl"
-            alt="用戶頭像"
-            class="h-20 w-20 rounded-full object-cover border-2 border-gray-200"
-          >
-          <NUpload
-            accept="image/*"
-            :max="1"
-            @change="handleAvatarUpload"
-          >
-            <NButton>更換頭像</NButton>
-          </NUpload>
-        </div>
-      </div>
 
       <!-- 表單 -->
       <NForm>

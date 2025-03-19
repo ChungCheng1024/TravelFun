@@ -585,7 +585,7 @@ const carouselImages = [
   {
     url: taiwanMountain,
     title: '台北101城市之美',
-    description: '台灣豐富多樣的城市景觀，展現自然生態之美 ',
+    description: '夜間燈光隨節慶或活動變換色彩，為臺北增添璀璨風采。',
   },
   {
     url: taiwanHouse,
@@ -594,8 +594,8 @@ const carouselImages = [
   },
   {
     url: sunMoonLake,
-    title: '日月潭湖景',
-    description: '台灣最大的天然湖泊，四季皆有不同  風貌的絕美景致',
+    title: '基隆港口',
+    description: '基隆港是台灣最大的國際商港，也是北台灣重要的海上交通樞紐。',
   },
   {
     url: hualienCoast,
@@ -609,8 +609,8 @@ const carouselImages = [
   },
   {
     url: taipeiNight,
-    title: '台北都會夜景',
-    description: '繁華都市的璀璨夜景，展現台灣復古都市風貌',
+    title: '陽明山之美',
+    description: '陽明山是台北市著名的郊山，以其豐富的自然景觀和溫泉資源而聞名。',
   },
 ];
 

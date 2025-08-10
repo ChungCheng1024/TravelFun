@@ -81,7 +81,7 @@
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMessage } from 'naive-ui';
-import { AUTH_API } from '@/api/config';
+import { AUTH_API } from '@/api';
 
 const router = useRouter();
 const message = useMessage();
@@ -129,24 +129,13 @@ const handleSubmit = async () => {
     loading.value = true;
     const { username, email, full_name, password, confirmPassword } = formData;
 
-    // 打印要發送的數據
-    console.log('準備發送的註冊數據:', {
+    await AUTH_API.register({
       username,
       email,
       full_name,
       password1: password,
       password2: confirmPassword
     });
-
-    const response = await AUTH_API.register({
-      username,
-      email,
-      full_name,
-      password1: password,
-      password2: confirmPassword
-    });
-
-    console.log('註冊成功:', response.data);
     message.success('註冊成功！');
     router.push('/login');
   } catch (error) {
